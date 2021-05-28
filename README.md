@@ -72,12 +72,15 @@ No modules.
 | [aws_efs_file_system_policy.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_file_system_policy) | resource |
 | [aws_efs_mount_target.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/efs_mount_target) | resource |
 | [aws_iam_policy.jenkins_controller_task_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
+| [aws_iam_policy.ssm_access_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_policy) | resource |
 | [aws_iam_role.aws_backup_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.ecs_execution_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role.jenkins_controller_task_role](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role) | resource |
 | [aws_iam_role_policy_attachment.backup_role_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.ecs_execution](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.ecs_execution_ssm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_iam_role_policy_attachment.jenkins_controller_task](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
+| [aws_iam_role_policy_attachment.jenkins_controller_task_ssm](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/iam_role_policy_attachment) | resource |
 | [aws_kms_key.cloudwatch](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/kms_key) | resource |
 | [aws_lb.this](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb) | resource |
 | [aws_lb_listener.http](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/resources/lb_listener) | resource |
@@ -99,6 +102,7 @@ No modules.
 | [aws_iam_policy_document.ecs_assume_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.efs_resource_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [aws_iam_policy_document.jenkins_controller_task_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
+| [aws_iam_policy_document.ssm_access_policy](https://registry.terraform.io/providers/hashicorp/aws/latest/docs/data-sources/iam_policy_document) | data source |
 | [template_file.jenkins_configuration_def](https://registry.terraform.io/providers/hashicorp/template/latest/docs/data-sources/file) | data source |
 
 ## Inputs
@@ -142,9 +146,9 @@ No modules.
 | <a name="input_jenkins_jnlp_port"></a> [jenkins\_jnlp\_port](#input\_jenkins\_jnlp\_port) | n/a | `number` | `50000` | no |
 | <a name="input_name_prefix"></a> [name\_prefix](#input\_name\_prefix) | n/a | `string` | `"serverless-jenkins"` | no |
 | <a name="input_region"></a> [region](#input\_region) | The target AWS region | `string` | n/a | yes |
-| <a name="input_route53_alias_name"></a> [route53\_alias\_name](#input\_route53\_alias\_name) | n/a | `string` | `"jenkins-controller"` | no |
-| <a name="input_route53_create_alias"></a> [route53\_create\_alias](#input\_route53\_create\_alias) | Route 53 | `string` | `false` | no |
-| <a name="input_route53_zone_id"></a> [route53\_zone\_id](#input\_route53\_zone\_id) | n/a | `string` | `null` | no |
+| <a name="input_route53_alias_name"></a> [route53\_alias\_name](#input\_route53\_alias\_name) | The CNAME alias for the ALB, if `route53_create_alias` is `true` | `string` | `"jenkins-controller"` | no |
+| <a name="input_route53_create_alias"></a> [route53\_create\_alias](#input\_route53\_create\_alias) | Create a CNAME alias for the ALB | `string` | `false` | no |
+| <a name="input_route53_zone_id"></a> [route53\_zone\_id](#input\_route53\_zone\_id) | An existing zone id to place the alias in, if `route53_create_alias` is `true` | `string` | `null` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | An object of tag key value pairs | `map(any)` | `{}` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | n/a | `string` | n/a | yes |
 
@@ -158,7 +162,7 @@ No modules.
 | <a name="output_efs_file_system_dns_name"></a> [efs\_file\_system\_dns\_name](#output\_efs\_file\_system\_dns\_name) | The dns name of the efs file system |
 | <a name="output_efs_file_system_id"></a> [efs\_file\_system\_id](#output\_efs\_file\_system\_id) | The id of the efs file system |
 | <a name="output_efs_security_group_id"></a> [efs\_security\_group\_id](#output\_efs\_security\_group\_id) | The id of the efs security group |
-| <a name="output_jenkins_controller_task_role"></a> [jenkins\_controller\_task\_role](#output\_jenkins\_controller\_task\_role) | An object containing the task role created for the Jenkins controller |
+| <a name="output_jenkins_controller_task_role"></a> [jenkins\_controller\_task\_role](#output\_jenkins\_controller\_task\_role) | The ARN of the task role used by or created for the Jenkins controller |
 <!-- END OF PRE-COMMIT-TERRAFORM DOCS HOOK -->
 
 ## Security

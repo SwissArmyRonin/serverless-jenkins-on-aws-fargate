@@ -201,30 +201,33 @@ variable "jenkins_controller_task_role_arn" {
 }
 
 variable "ecs_execution_role_arn" {
-  type        = string
   description = "An custom execution role to use as the ecs exection role (optional)"
+  type        = string
   default     = null
 }
 
 // Route 53
 variable "route53_create_alias" {
-  type    = string
-  default = false
+  description = "Create a CNAME alias for the ALB"
+  type        = string
+  default     = false
 }
 
 variable "route53_zone_id" {
-  type    = string
-  default = null
+  description = "An existing zone id to place the alias in, if `route53_create_alias` is `true`"
+  type        = string
+  default     = null
 }
 
 variable "route53_alias_name" {
-  type    = string
-  default = "jenkins-controller"
+  description = "The CNAME alias for the ALB, if `route53_create_alias` is `true`"
+  type        = string
+  default     = "jenkins-controller"
 }
 
 variable "tags" {
-  type        = map(any)
   description = "An object of tag key value pairs"
+  type        = map(any)
   default     = {}
 }
 

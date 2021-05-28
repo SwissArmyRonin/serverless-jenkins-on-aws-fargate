@@ -29,6 +29,6 @@ output "efs_aws_backup_vault_name" {
 }
 
 output "jenkins_controller_task_role" {
-  description = "An object containing the task role created for the Jenkins controller"
-  value       = aws_iam_role.jenkins_controller_task_role.name
+  description = "The ARN of the task role used by or created for the Jenkins controller"
+  value       = var.jenkins_controller_task_role_arn != null ? var.jenkins_controller_task_role_arn : aws_iam_role.jenkins_controller_task_role[0].name
 }

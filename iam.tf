@@ -108,37 +108,43 @@ data "aws_iam_policy_document" "ecs_assume_policy" {
   }
 }
 
-# data "aws_iam_policy_document" "ecs_execution_policy" {
-#   statement {
-#     effect = "Allow"
-#     actions = [
-#       "ecr:GetAuthorizationToken",
-#       "ecr:BatchCheckLayerAvailability",
-#       "ecr:GetDownloadUrlForLayer",
-#       "ecr:BatchGetImage",
-#       "logs:CreateLogStream",
-#       "logs:CreateLogGroup",
-#       "logs:PutLogEvents"
-#     ]
-#     resources = ["*"]
-#   }
-# }
-
 resource "aws_iam_role" "ecs_execution_role" {
+  count = var.ecs_execution_role_arn != null ? 0 : 1
+
   name               = "${var.name_prefix}-ecs-execution-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_policy.json
   tags               = var.tags
 }
 
-# resource "aws_iam_policy" "ecs_execution_policy" {
-#   name   = "${var.name_prefix}-ecs-execution-policy"
-#   policy = data.aws_iam_policy_document.ecs_execution_policy.json
-# }
-
 resource "aws_iam_role_policy_attachment" "ecs_execution" {
-  role = aws_iam_role.ecs_execution_role.name
-  # policy_arn = aws_iam_policy.ecs_execution_policy.arn
+  count = var.ecs_execution_role_arn != null ? 0 : 1
+
+  role       = aws_iam_role.ecs_execution_role[0].name
   policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
+}
+
+resource "aws_iam_role_policy_attachment" "ecs_execution_ssm" {
+  count = var.ecs_execution_role_arn != null ? 0 : 1
+
+  role       = aws_iam_role.ecs_execution_role[0].name
+  policy_arn = aws_iam_policy.ssm_access_policy[0].arn
+}
+
+data "aws_iam_policy_document" "ssm_access_policy" {
+  statement {
+    effect = "Allow"
+    actions = [
+      "ssm:PutParameter",
+      "ssm:GetParameter",
+      "ssm:GetParameters"
+    ]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/jenkins*"]
+  }
+  statement {
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${var.account_id}:alias/aws/ssm"]
+  }
 }
 
 data "aws_iam_policy_document" "jenkins_controller_task_policy" {
@@ -176,20 +182,7 @@ data "aws_iam_policy_document" "jenkins_controller_task_policy" {
     }
     resources = ["arn:aws:ecs:${var.region}:${var.account_id}:task/*"]
   }
-  statement {
-    effect = "Allow"
-    actions = [
-      "ssm:PutParameter",
-      "ssm:GetParameter",
-      "ssm:GetParameters"
-    ]
-    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/jenkins*"]
-  }
-  statement {
-    effect    = "Allow"
-    actions   = ["kms:Decrypt"]
-    resources = ["arn:aws:kms:${var.region}:${var.account_id}:alias/aws/ssm"]
-  }
+
   statement {
     effect    = "Allow"
     actions   = ["iam:PassRole"]
@@ -232,22 +225,36 @@ data "aws_iam_policy_document" "jenkins_controller_task_policy" {
   }
 }
 
+resource "aws_iam_policy" "ssm_access_policy" {
+  count  = var.jenkins_controller_task_role_arn == null || var.ecs_execution_role_arn == null ? 1 : 0
+  name   = "${var.name_prefix}-ssm-access-policy"
+  policy = data.aws_iam_policy_document.ssm_access_policy.json
+}
+
 resource "aws_iam_policy" "jenkins_controller_task_policy" {
+  count  = var.jenkins_controller_task_role_arn != null ? 0 : 1
   name   = "${var.name_prefix}-controller-task-policy"
   policy = data.aws_iam_policy_document.jenkins_controller_task_policy.json
 }
 
 resource "aws_iam_role" "jenkins_controller_task_role" {
+  count              = var.jenkins_controller_task_role_arn != null ? 0 : 1
   name               = "${var.name_prefix}-controller-task-role"
   assume_role_policy = data.aws_iam_policy_document.ecs_assume_policy.json
   tags               = var.tags
 }
 
 resource "aws_iam_role_policy_attachment" "jenkins_controller_task" {
-  role       = aws_iam_role.jenkins_controller_task_role.name
-  policy_arn = aws_iam_policy.jenkins_controller_task_policy.arn
+  count      = var.jenkins_controller_task_role_arn != null ? 0 : 1
+  role       = aws_iam_role.jenkins_controller_task_role[0].name
+  policy_arn = aws_iam_policy.jenkins_controller_task_policy[0].arn
 }
 
+resource "aws_iam_role_policy_attachment" "jenkins_controller_task_ssm" {
+  count      = var.jenkins_controller_task_role_arn != null ? 0 : 1
+  role       = aws_iam_role.jenkins_controller_task_role[0].name
+  policy_arn = aws_iam_policy.ssm_access_policy[0].arn
+}
 
 //CloudWatch
 data "aws_iam_policy_document" "cloudwatch" {
