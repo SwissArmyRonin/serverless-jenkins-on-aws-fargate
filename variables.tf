@@ -227,3 +227,13 @@ variable "tags" {
   description = "An object of tag key value pairs"
   default     = {}
 }
+
+variable "account_id" {
+  description = "The target AWS account's id"
+  type        = string
+}
+
+variable "region" {
+  description = "The target AWS region"
+  type        = string
+}

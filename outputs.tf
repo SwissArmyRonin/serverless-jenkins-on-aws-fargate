@@ -27,3 +27,8 @@ output "efs_aws_backup_vault_name" {
   value       = aws_backup_vault.this.*.name
   description = "The name of the aws backup vault used for EFS backups"
 }
+
+output "jenkins_controller_task_role" {
+  description = "An object containing the task role created for the Jenkins controller"
+  value       = aws_iam_role.jenkins_controller_task_role.name
+}

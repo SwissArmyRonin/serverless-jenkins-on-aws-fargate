@@ -46,5 +46,6 @@ module "serverless_jenkins" {
   route53_create_alias          = true
   route53_alias_name            = var.jenkins_dns_alias
   route53_zone_id               = var.route53_zone_id
+  account_id                    = data.aws_caller_identity.current.account_id
+  region                        = data.aws_region.current.name
 }
-

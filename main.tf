@@ -1,16 +1,3 @@
-data "aws_caller_identity" "current" {}
-data "aws_region" "current" {}
-
-data "aws_vpc" "selected" {
-  id = var.vpc_id
-}
-
-locals {
-  account_id = data.aws_caller_identity.current.account_id
-  region     = data.aws_region.current.name
-}
-
-
 resource "aws_security_group" "efs_security_group" {
   name        = "${var.name_prefix}-efs"
   description = "${var.name_prefix} efs security group"

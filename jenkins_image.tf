@@ -22,7 +22,7 @@ data "template_file" "jenkins_configuration_def" {
   vars = {
     ecs_cluster_fargate      = aws_ecs_cluster.jenkins_controller.arn
     ecs_cluster_fargate_spot = aws_ecs_cluster.jenkins_agents.arn
-    cluster_region           = local.region
+    cluster_region           = var.region
     jenkins_cloud_map_name   = "controller.${var.name_prefix}"
     jenkins_controller_port  = var.jenkins_controller_port
     jnlp_port                = var.jenkins_jnlp_port

@@ -10,11 +10,11 @@ data "aws_iam_policy_document" "efs_resource_policy" {
 
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${local.account_id}:root"]
+      identifiers = ["arn:aws:iam::${var.account_id}:root"]
     }
 
     resources = [
-      "arn:aws:elasticfilesystem:${local.region}:${local.account_id}:file-system/${aws_efs_file_system.this.id}"
+      "arn:aws:elasticfilesystem:${var.region}:${var.account_id}:file-system/${aws_efs_file_system.this.id}"
     ]
 
     condition {
@@ -53,7 +53,7 @@ data "aws_iam_policy_document" "ecr_resource_policy" {
     ]
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${local.account_id}:root"]
+      identifiers = ["arn:aws:iam::${var.account_id}:root"]
     }
   }
 
@@ -108,21 +108,21 @@ data "aws_iam_policy_document" "ecs_assume_policy" {
   }
 }
 
-data "aws_iam_policy_document" "ecs_execution_policy" {
-  statement {
-    effect = "Allow"
-    actions = [
-      "ecr:GetAuthorizationToken",
-      "ecr:BatchCheckLayerAvailability",
-      "ecr:GetDownloadUrlForLayer",
-      "ecr:BatchGetImage",
-      "logs:CreateLogStream",
-      "logs:CreateLogGroup",
-      "logs:PutLogEvents"
-    ]
-    resources = ["*"]
-  }
-}
+# data "aws_iam_policy_document" "ecs_execution_policy" {
+#   statement {
+#     effect = "Allow"
+#     actions = [
+#       "ecr:GetAuthorizationToken",
+#       "ecr:BatchCheckLayerAvailability",
+#       "ecr:GetDownloadUrlForLayer",
+#       "ecr:BatchGetImage",
+#       "logs:CreateLogStream",
+#       "logs:CreateLogGroup",
+#       "logs:PutLogEvents"
+#     ]
+#     resources = ["*"]
+#   }
+# }
 
 resource "aws_iam_role" "ecs_execution_role" {
   name               = "${var.name_prefix}-ecs-execution-role"
@@ -130,29 +130,26 @@ resource "aws_iam_role" "ecs_execution_role" {
   tags               = var.tags
 }
 
-resource "aws_iam_policy" "ecs_execution_policy" {
-  name   = "${var.name_prefix}-ecs-execution-policy"
-  policy = data.aws_iam_policy_document.ecs_execution_policy.json
-}
+# resource "aws_iam_policy" "ecs_execution_policy" {
+#   name   = "${var.name_prefix}-ecs-execution-policy"
+#   policy = data.aws_iam_policy_document.ecs_execution_policy.json
+# }
 
 resource "aws_iam_role_policy_attachment" "ecs_execution" {
-  role       = aws_iam_role.ecs_execution_role.name
-  policy_arn = aws_iam_policy.ecs_execution_policy.arn
+  role = aws_iam_role.ecs_execution_role.name
+  # policy_arn = aws_iam_policy.ecs_execution_policy.arn
+  policy_arn = "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy"
 }
 
 data "aws_iam_policy_document" "jenkins_controller_task_policy" {
   statement {
-    effect = "Allow"
-    actions = [
-      "ecs:ListContainerInstances"
-    ]
+    effect    = "Allow"
+    actions   = ["ecs:ListContainerInstances"]
     resources = [aws_ecs_cluster.jenkins_controller.arn, aws_ecs_cluster.jenkins_agents.arn]
   }
   statement {
-    effect = "Allow"
-    actions = [
-      "ecs:RunTask"
-    ]
+    effect  = "Allow"
+    actions = ["ecs:RunTask"]
     condition {
       test     = "ArnEquals"
       variable = "ecs:cluster"
@@ -161,7 +158,7 @@ data "aws_iam_policy_document" "jenkins_controller_task_policy" {
         aws_ecs_cluster.jenkins_agents.arn
       ]
     }
-    resources = ["arn:aws:ecs:${local.region}:${local.account_id}:task-definition/*"]
+    resources = ["arn:aws:ecs:${var.region}:${var.account_id}:task-definition/*"]
   }
   statement {
     effect = "Allow"
@@ -177,7 +174,7 @@ data "aws_iam_policy_document" "jenkins_controller_task_policy" {
         aws_ecs_cluster.jenkins_agents.arn
       ]
     }
-    resources = ["arn:aws:ecs:${local.region}:${local.account_id}:task/*"]
+    resources = ["arn:aws:ecs:${var.region}:${var.account_id}:task/*"]
   }
   statement {
     effect = "Allow"
@@ -186,21 +183,17 @@ data "aws_iam_policy_document" "jenkins_controller_task_policy" {
       "ssm:GetParameter",
       "ssm:GetParameters"
     ]
-    resources = ["arn:aws:ssm:${local.region}:${local.account_id}:parameter/jenkins*"]
+    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/jenkins*"]
   }
   statement {
-    effect = "Allow"
-    actions = [
-      "kms:Decrypt"
-    ]
-    resources = ["arn:aws:kms:${local.region}:${local.account_id}:alias/aws/ssm"]
+    effect    = "Allow"
+    actions   = ["kms:Decrypt"]
+    resources = ["arn:aws:kms:${var.region}:${var.account_id}:alias/aws/ssm"]
   }
   statement {
-    effect = "Allow"
-    actions = [
-      "iam:PassRole"
-    ]
-    resources = ["arn:aws:iam::${local.account_id}:role/*"]
+    effect    = "Allow"
+    actions   = ["iam:PassRole"]
+    resources = ["arn:aws:iam::${var.account_id}:role/*"]
   }
   statement {
     effect = "Allow"
@@ -260,14 +253,12 @@ resource "aws_iam_role_policy_attachment" "jenkins_controller_task" {
 data "aws_iam_policy_document" "cloudwatch" {
   policy_id = "key-policy-cloudwatch"
   statement {
-    sid = "Enable IAM User Permissions"
-    actions = [
-      "kms:*",
-    ]
-    effect = "Allow"
+    sid     = "Enable IAM User Permissions"
+    actions = ["kms:*"]
+    effect  = "Allow"
     principals {
       type        = "AWS"
-      identifiers = ["arn:aws:iam::${local.account_id}:root"]
+      identifiers = ["arn:aws:iam::${var.account_id}:root"]
     }
     resources = ["*"]
   }
@@ -283,7 +274,7 @@ data "aws_iam_policy_document" "cloudwatch" {
     effect = "Allow"
     principals {
       type        = "Service"
-      identifiers = ["logs.${local.region}.amazonaws.com"]
+      identifiers = ["logs.${var.region}.amazonaws.com"]
     }
     resources = ["*"]
   }
