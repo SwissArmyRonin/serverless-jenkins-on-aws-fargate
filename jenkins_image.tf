@@ -1,9 +1,9 @@
 data "aws_ecr_authorization_token" "token" {}
 
 locals {
-  ecr_endpoint = split("/", aws_ecr_repository.jenkins_controller.repository_url)[0]
+  ecr_endpoint  = split("/", aws_ecr_repository.jenkins_controller.repository_url)[0]
+  docker_folder = var.docker_folder != null ? var.docker_folder : "${path.module}/docker"
 }
-
 
 resource "aws_ecr_repository" "jenkins_controller" {
   name                 = var.jenkins_ecr_repository_name
@@ -12,12 +12,11 @@ resource "aws_ecr_repository" "jenkins_controller" {
   image_scanning_configuration {
     scan_on_push = true
   }
-
 }
 
 data "template_file" "jenkins_configuration_def" {
 
-  template = file("${path.module}/docker/files/jenkins.yaml.tpl")
+  template = file("${local.docker_folder}/files/jenkins.yaml.tpl")
 
   vars = {
     ecs_cluster_fargate      = aws_ecs_cluster.jenkins_controller.arn
@@ -34,13 +33,13 @@ data "template_file" "jenkins_configuration_def" {
 
 resource "null_resource" "render_template" {
   triggers = {
-    src_hash = file("${path.module}/docker/files/jenkins.yaml.tpl")
+    src_hash = file("${local.docker_folder}/files/jenkins.yaml.tpl")
   }
   depends_on = [data.template_file.jenkins_configuration_def]
 
   provisioner "local-exec" {
     command = <<EOF
-tee ${path.module}/docker/files/jenkins.yaml <<ENDF
+tee ${local.docker_folder}/files/jenkins.yaml <<ENDF
 ${data.template_file.jenkins_configuration_def.rendered}
 EOF
   }
@@ -48,13 +47,13 @@ EOF
 
 resource "null_resource" "build_docker_image" {
   triggers = {
-    src_hash = file("${path.module}/docker/files/jenkins.yaml.tpl")
+    src_hash = file("${local.docker_folder}/files/jenkins.yaml.tpl")
   }
   depends_on = [null_resource.render_template]
   provisioner "local-exec" {
     command = <<EOF
 docker login -u AWS -p ${data.aws_ecr_authorization_token.token.password} ${local.ecr_endpoint} && \
-docker build -t ${aws_ecr_repository.jenkins_controller.repository_url}:latest ${path.module}/docker/ && \
+docker build -t ${aws_ecr_repository.jenkins_controller.repository_url}:latest ${local.docker_folder}/ && \
 docker push ${aws_ecr_repository.jenkins_controller.repository_url}:latest
 EOF
   }

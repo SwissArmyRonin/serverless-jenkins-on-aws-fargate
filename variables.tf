@@ -237,3 +237,9 @@ variable "region" {
   description = "The target AWS region"
   type        = string
 }
+
+variable "docker_folder" {
+  description = "The path to a folder containing a Dockerfile and a Jenkins YAML template. If not set, the default is to use the included files in './docker'"
+  type        = string
+  default     = null
+}
