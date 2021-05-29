@@ -242,7 +242,30 @@ variable "region" {
 }
 
 variable "docker_folder" {
-  description = "The path to a folder containing a Dockerfile and a Jenkins YAML template. If not set, the default is to use the included files in './docker'"
+  description = <<-EOF
+    The path to a folder containing a Dockerfile and a Jenkins YAML template. If
+    not set, the default is to use the included files in './docker'
+  EOF
   type        = string
   default     = null
+}
+
+variable "template_vars" {
+  description = <<-EOF
+    A map of key/value pairs that will be added to the default set, overriding
+    existing keys, and inected into the jenkins.yaml.tpl file to generate
+    jenkins.yaml
+  EOF
+  type        = map(any)
+  default     = {}
+}
+
+variable "secrets" {
+  description = <<-EOF
+    A list of environment variables used to populate the secrets section of the
+    Jenkins controller task definition. The map is defined as a environment
+    variable name to SSM value ARN
+  EOF
+  type        = map(string)
+  default     = {}
 }

@@ -138,7 +138,7 @@ data "aws_iam_policy_document" "ssm_access_policy" {
       "ssm:GetParameter",
       "ssm:GetParameters"
     ]
-    resources = ["arn:aws:ssm:${var.region}:${var.account_id}:parameter/jenkins*"]
+    resources = concat(["arn:aws:ssm:${var.region}:${var.account_id}:parameter/jenkins*"], values(var.secrets))
   }
   statement {
     effect    = "Allow"

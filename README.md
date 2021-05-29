@@ -119,7 +119,7 @@ No modules.
 | <a name="input_alb_security_group_ids"></a> [alb\_security\_group\_ids](#input\_alb\_security\_group\_ids) | A list of security group ids to attach to the Application Load Balancer | `list(string)` | `null` | no |
 | <a name="input_alb_subnet_ids"></a> [alb\_subnet\_ids](#input\_alb\_subnet\_ids) | A list of subnets for the Application Load Balancer | `list(string)` | `null` | no |
 | <a name="input_alb_type_internal"></a> [alb\_type\_internal](#input\_alb\_type\_internal) | alb | `bool` | `false` | no |
-| <a name="input_docker_folder"></a> [docker\_folder](#input\_docker\_folder) | The path to a folder containing a Dockerfile and a Jenkins YAML template. If not set, the default is to use the included files in './docker' | `string` | `null` | no |
+| <a name="input_docker_folder"></a> [docker\_folder](#input\_docker\_folder) | The path to a folder containing a Dockerfile and a Jenkins YAML template. If<br>not set, the default is to use the included files in './docker' | `string` | `null` | no |
 | <a name="input_ecs_execution_role_arn"></a> [ecs\_execution\_role\_arn](#input\_ecs\_execution\_role\_arn) | An custom execution role to use as the ecs exection role (optional) | `string` | `null` | no |
 | <a name="input_efs_access_point_gid"></a> [efs\_access\_point\_gid](#input\_efs\_access\_point\_gid) | The gid number to associate with the EFS access point | `number` | `1000` | no |
 | <a name="input_efs_access_point_uid"></a> [efs\_access\_point\_uid](#input\_efs\_access\_point\_uid) | The uid number to associate with the EFS access point | `number` | `1000` | no |
@@ -149,7 +149,9 @@ No modules.
 | <a name="input_route53_alias_name"></a> [route53\_alias\_name](#input\_route53\_alias\_name) | The CNAME alias for the ALB, if `route53_create_alias` is `true` | `string` | `"jenkins-controller"` | no |
 | <a name="input_route53_create_alias"></a> [route53\_create\_alias](#input\_route53\_create\_alias) | Create a CNAME alias for the ALB | `string` | `false` | no |
 | <a name="input_route53_zone_id"></a> [route53\_zone\_id](#input\_route53\_zone\_id) | An existing zone id to place the alias in, if `route53_create_alias` is `true` | `string` | `null` | no |
+| <a name="input_secrets"></a> [secrets](#input\_secrets) | A list of environment variables used to populate the secrets section of the<br>Jenkins controller task definition. The map is defined as a environment<br>variable name to SSM value ARN | `map(string)` | `{}` | no |
 | <a name="input_tags"></a> [tags](#input\_tags) | An object of tag key value pairs | `map(any)` | `{}` | no |
+| <a name="input_template_vars"></a> [template\_vars](#input\_template\_vars) | A map of key/value pairs that will be added to the default set, overriding<br>existing keys, and inected into the jenkins.yaml.tpl file to generate<br>jenkins.yaml | `map(any)` | `{}` | no |
 | <a name="input_vpc_id"></a> [vpc\_id](#input\_vpc\_id) | n/a | `string` | n/a | yes |
 
 ## Outputs

@@ -20,6 +20,12 @@ resource "aws_ecs_cluster" "jenkins_agents" {
 }
 
 locals {
+  base_secrets = {
+    ADMIN_PWD = "arn:aws:ssm:${var.region}:${var.account_id}:parameter/jenkins-pwd"
+  }
+
+  secrets = merge(local.base_secrets, var.secrets)
+
   jenkins_controller_container_def = [
     {
       name              = "${var.name_prefix}-controller"
@@ -52,15 +58,12 @@ locals {
           awslogs-stream-prefix = "controller"
         }
       },
-      secrets = [
-        {
-          name      = "ADMIN_PWD"
-          valueFrom = "arn:aws:ssm:${var.region}:${var.account_id}:parameter/jenkins-pwd"
-        }
-      ]
+      secrets = [for name, valueFrom in local.secrets : {
+        name      = name
+        valueFrom = valueFrom
+      }]
     }
   ]
-
 }
 
 resource "aws_kms_key" "cloudwatch" {

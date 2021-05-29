@@ -18,7 +18,7 @@ data "template_file" "jenkins_configuration_def" {
 
   template = file("${local.docker_folder}/files/jenkins.yaml.tpl")
 
-  vars = {
+  vars = merge({
     ecs_cluster_fargate      = aws_ecs_cluster.jenkins_controller.arn
     ecs_cluster_fargate_spot = aws_ecs_cluster.jenkins_agents.arn
     cluster_region           = var.region
@@ -27,7 +27,7 @@ data "template_file" "jenkins_configuration_def" {
     jnlp_port                = var.jenkins_jnlp_port
     agent_security_groups    = aws_security_group.jenkins_controller_security_group.id
     subnets                  = join(",", var.alb_subnet_ids)
-  }
+  }, var.template_vars)
 }
 
 
@@ -47,7 +47,9 @@ EOF
 
 resource "null_resource" "build_docker_image" {
   triggers = {
-    src_hash = file("${local.docker_folder}/files/jenkins.yaml.tpl")
+    docker_hash = file("${local.docker_folder}/Dockerfile")
+    src_hash    = file("${local.docker_folder}/files/jenkins.yaml.tpl")
+    plugin_hash = file("${local.docker_folder}/files/plugins.txt")
   }
   depends_on = [null_resource.render_template]
   provisioner "local-exec" {
